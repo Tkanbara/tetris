@@ -1,0 +1,17 @@
+.cell {
+    width: 30px;
+    height: 30px;
+    float: left;
+}
+
+.cell.exist {
+    background-color: red;
+}
+
+.cell.empty {
+    
+}
+
+.row {
+    clear: both;
+}
