@@ -1,11 +1,11 @@
-const BAR = [
+const I = [
     ['x'],
     ['x'],
     ['x'],
     ['x'],
 ];
 
-const BOX = [
+const O = [
     ['x', 'x'],
     ['x', 'x'],
 ];
