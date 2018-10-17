@@ -37,10 +37,18 @@ const J = [
     ['x', 'x'],
 ];
 
+const BLOCKS = [
+    I, O, Z, S, T, L, J
+];
+
 function makeFallingBlock(type) {
     return type.map(row =>
         row.map(cell =>
             cell === 'x' ? CELL_TYPE_FALLING : CELL_TYPE_EMPTY
         )
     );
+}
+
+function generateRandomBlock() {
+    return BLOCKS[Math.floor(Math.random() * Math.floor(BLOCKS.length))];
 }
