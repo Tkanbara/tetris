@@ -1,44 +1,40 @@
-const I = [
+var I = [
     ['x'],
     ['x'],
     ['x'],
     ['x'],
 ];
 
-const O = [
+var O = [
     ['x', 'x'],
     ['x', 'x'],
 ];
 
-const Z = [
+var Z = [
     ['x', 'x'],
     [' ', 'x', 'x'],
 ];
 
-const S = [
+var S = [
     [' ', 'x', 'x'],
     ['x', 'x'],
 ];
 
-const T = [
-    ['X', 'x', 'x'],
+var T = [
+    ['x', 'x', 'x'],
     [' ', 'x'],
 ];
 
-const L = [
+var L = [
     ['x'],
     ['x'],
     ['x', 'x'],
 ];
 
-const J = [
+var J = [
     [' ', 'x'],
     [' ', 'x'],
     ['x', 'x'],
-];
-
-const BLOCKS = [
-    I, O, Z, S, T, L, J
 ];
 
 function makeFallingBlock(type) {
@@ -47,8 +43,4 @@ function makeFallingBlock(type) {
             cell === 'x' ? CELL_TYPE_FALLING : CELL_TYPE_EMPTY
         )
     );
-}
-
-function generateRandomBlock() {
-    return makeFallingBlock(BLOCKS[Math.floor(Math.random() * Math.floor(BLOCKS.length))]);
 }

@@ -1,4 +1,4 @@
-const FRAME_RATE = 10;
+const FRAME_RATE = 100;
 const WIDTH = 10;
 const HEIGHT = 20 + 4;
 
@@ -44,7 +44,14 @@ function blockFalled() {
 }
 
 function enterNewBlock() {
-    let block = generateRandomBlock();
+    const blocks = [
+        "I", "O", "Z", "S", "T", "L", "J"
+    ];
+
+    let blockType = blocks[Math.floor(Math.random() * blocks.length)];
+    console.log("ブロック生成 " + blockType);
+
+    let block = makeFallingBlock(this[blockType]);
     let blockHeight = block.length;
     let verticalOffset = 4 - blockHeight;
     let horizontalOffset = WIDTH / 2 - 1;
