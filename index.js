@@ -89,46 +89,71 @@ function canFall() {
     return true;
 }
 
+function detectGameOver() {
+    for (let i = 0; i < 4; i++) {
+        for (let j = 0; j < WIDTH; j++) {
+            if (FRAME_DATA[i][j] == CELL_TYPE_EXIST) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function fallBlock() {
+    // ブロックを1マス下へ
+    for (let i = 0; i < WIDTH; i++) {
+        // 縦にブロックを見ていく。
+        // FALLINGの下にEXISTSがあったらブロックを落とせない。
+        for (let j = HEIGHT - 1; 0 < j; j--) {
+            let cell = FRAME_DATA[j][i];
+            let precedingCell = FRAME_DATA[j - 1][i];
+
+            if (cell === CELL_TYPE_EMPTY && precedingCell === CELL_TYPE_FALLING) {
+                FRAME_DATA[j][i] = CELL_TYPE_FALLING;
+                FRAME_DATA[j - 1][i] = CELL_TYPE_EMPTY;
+            }
+        }
+    }
+}
+
+function fixBlock() {
+    // CELL_TYPE_FALLING のセルを CELL_TYPE_EXIST にする
+    for (let i = 0; i < HEIGHT; i++) {
+        for (let j = 0; j < WIDTH; j++) {
+            if (FRAME_DATA[i][j] === CELL_TYPE_FALLING) {
+                FRAME_DATA[i][j] = CELL_TYPE_EXIST;
+            }
+        }
+    }
+}
+
 function makeNextFameData() {
     if (tick_count % 10 == 0) {
         // 1秒ごとにブロックを下に落とす
         if (blockFalled()) {
             // 新しいブロックを生成
             enterNewBlock();
+
+            if (detectGameOver()) {
+                clearInterval(interval);
+                alert("ゲームオーバー");
+            }
         } else {
             if (canFall()) {
-                // ブロックを1マス下へ
-                for (let i = 0; i < WIDTH; i++) {
-                    // 縦にブロックを見ていく。
-                    // FALLINGの下にEXISTSがあったらブロックを落とせない。
-                    for (let j = HEIGHT - 1; 0 < j; j--) {
-                        let cell = FRAME_DATA[j][i];
-                        let precedingCell = FRAME_DATA[j - 1][i];
-
-                        if (cell === CELL_TYPE_EMPTY && precedingCell === CELL_TYPE_FALLING) {
-                            FRAME_DATA[j][i] = CELL_TYPE_FALLING;
-                            FRAME_DATA[j - 1][i] = CELL_TYPE_EMPTY;
-                        }
-                    }
-                }
+                fallBlock();
             } else {
-                // CELL_TYPE_FALLING のセルを CELL_TYPE_EXIST にする
-                for (let i = 0; i < HEIGHT; i++) {
-                    for (let j = 0; j < WIDTH; j++) {
-                        if (FRAME_DATA[i][j] === CELL_TYPE_FALLING) {
-                            FRAME_DATA[i][j] = CELL_TYPE_EXIST;
-                        }
-                    }
-                }
+                fixBlock();
             }
         }
     }
 }
 
-var foo;
+var interval;
 
 function run() {
-    foo = setInterval(() => {
+    interval = setInterval(() => {
         tick_count++;
 
         // handle_user_input();
