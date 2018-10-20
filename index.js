@@ -14,6 +14,7 @@ for (let i = 0; i < HEIGHT; i++) {
     }
 }
 
+// FRAME_DATAを描画
 function draw() {
     const frame = $("#frame");
     frame.empty();
@@ -39,10 +40,12 @@ function draw() {
     }
 }
 
+// 落下中のブロックが存在するか
 function blockFalled() {
     return FRAME_DATA.every(row => row.every(cell => cell != CELL_TYPE_FALLING));
 }
 
+// 新しいブロックを生成してFRAME_DATAに入れる
 function enterNewBlock() {
     const blocks = [
         "I", "O", "Z", "S", "T", "L", "J"
@@ -65,10 +68,11 @@ function enterNewBlock() {
     }
 }
 
+// 落下中のブロックが下に落ちられるか
 function canFall() {
+    // 縦にブロックを見ていく。
+    // FALLINGの下にEXISTSがあったらブロックを落とせない。
     for (let i = 0; i < WIDTH; i++) {
-        // 縦にブロックを見ていく。
-        // FALLINGの下にEXISTSがあったらブロックを落とせない。
         for (let j = 0; j < HEIGHT - 1; j++) {
             let cell = FRAME_DATA[j][i];
             let followingCell = FRAME_DATA[j + 1][i];
@@ -89,6 +93,7 @@ function canFall() {
     return true;
 }
 
+// ゲームオーバー検出
 function detectGameOver() {
     for (let i = 0; i < 4; i++) {
         for (let j = 0; j < WIDTH; j++) {
@@ -101,8 +106,8 @@ function detectGameOver() {
     return false;
 }
 
+// 落下中のブロックを1マス下へ移動する
 function fallBlock() {
-    // ブロックを1マス下へ
     for (let i = 0; i < WIDTH; i++) {
         // 縦にブロックを見ていく。
         // FALLINGの下にEXISTSがあったらブロックを落とせない。
@@ -118,8 +123,8 @@ function fallBlock() {
     }
 }
 
+// CELL_TYPE_FALLING のセルを CELL_TYPE_EXIST にする
 function fixBlock() {
-    // CELL_TYPE_FALLING のセルを CELL_TYPE_EXIST にする
     for (let i = 0; i < HEIGHT; i++) {
         for (let j = 0; j < WIDTH; j++) {
             if (FRAME_DATA[i][j] === CELL_TYPE_FALLING) {
@@ -130,21 +135,25 @@ function fixBlock() {
 }
 
 function makeNextFameData() {
-    if (tick_count % 10 == 0) {
-        // 1秒ごとにブロックを下に落とす
-        if (blockFalled()) {
-            // 新しいブロックを生成
-            enterNewBlock();
+    // 1秒ごとにブロックを下に落とす
+
+    if (tick_count % 10 != 0) {
+        return;
+    }
+
+    if (blockFalled()) {
+        // 新しいブロックを生成
+        enterNewBlock();
+
+    } else {
+        if (canFall()) {
+            fallBlock();
+        } else {
+            fixBlock();
 
             if (detectGameOver()) {
                 clearInterval(interval);
                 alert("ゲームオーバー");
-            }
-        } else {
-            if (canFall()) {
-                fallBlock();
-            } else {
-                fixBlock();
             }
         }
     }
@@ -170,11 +179,11 @@ $(() => {
 
 $(() => {
     $("#stop").on("click", () => {
-        console.log("fooooooooooooooo");
-        clearInterval(foo);
+        clearInterval(interval);
     });
 
     $("#resume").on("click", () => {
         run();
     });
-})
+});
+
