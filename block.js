@@ -50,5 +50,5 @@ function makeFallingBlock(type) {
 }
 
 function generateRandomBlock() {
-    return BLOCKS[Math.floor(Math.random() * Math.floor(BLOCKS.length))];
+    return makeFallingBlock(BLOCKS[Math.floor(Math.random() * Math.floor(BLOCKS.length))]);
 }
