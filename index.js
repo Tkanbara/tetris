@@ -1,4 +1,5 @@
-const FRAME_RATE = 10;
+const FRAME_RATE = 100;
+const BLOCK_FALLING_FREQUENCY = 100;
 const WIDTH = 10;
 const HEIGHT = 20 + 4;
 
@@ -213,7 +214,7 @@ function makeNextFameData() {
 
     // 10フレーム周期でブロックを下に落とす
 
-    if (tick_count % 10 != 0) {
+    if (tick_count % BLOCK_FALLING_FREQUENCY != 0) {
         return;
     }
 
