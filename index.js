@@ -1,4 +1,4 @@
-const FRAME_RATE = 100;
+const FRAME_RATE = 10;
 const WIDTH = 10;
 const HEIGHT = 20 + 4;
 
@@ -174,15 +174,16 @@ function fixBlock() {
     }
 }
 
-function makeNextFameData() {
-    // 入力のハンドリング
+// 入力のハンドリング
+function handleUserInput() {
     if (input_buffer.length) {
         var keyCode = input_buffer[input_buffer.length - 1];
+
+        console.log("handle " + keyCode);
 
         switch (keyCode) {
             case LEFT_KEY:
             case H_KEY:
-                console.log("handle " + keyCode);
                 if (canMove("left")) {
                     moveBlock("left");
                 }
@@ -190,15 +191,25 @@ function makeNextFameData() {
 
             case RIGHT_KEY:
             case L_KEY:
-                console.log("handle " + keyCode);
                 if (canMove("right")) {
                     moveBlock("right");
+                }
+                break;
+
+            case DOWN_KEY:
+            case J_KEY:
+                if (canMove("down")) {
+                    moveBlock("down");
                 }
                 break;
         }
 
         input_buffer = [];
     }
+}
+
+function makeNextFameData() {
+    handleUserInput();
 
     // 10フレーム周期でブロックを下に落とす
 
@@ -250,7 +261,7 @@ $(() => {
 
     $(window).on("keydown", (event) => {
         const keyCode = event.keyCode;
-        const array = [LEFT_KEY, RIGHT_KEY, H_KEY, L_KEY];
+        const array = [LEFT_KEY, RIGHT_KEY, DOWN_KEY, H_KEY, J_KEY, L_KEY];
         if (array.includes(keyCode)) {
             input_buffer.push(keyCode);
         }
