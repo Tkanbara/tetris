@@ -13,3 +13,9 @@ function rotate(array) {
 
     return newArray.map(a => a.reverse());
 }
+
+// 2次元配列をコピー
+function copy2dArray(array) {
+    return array.map(a => a.slice());
+}
+

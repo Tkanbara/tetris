@@ -1,5 +1,5 @@
-const FRAME_RATE = 100;
-const BLOCK_FALLING_FREQUENCY = 100;
+const FRAME_RATE = 50;
+const BLOCK_FALLING_FREQUENCY = 25;
 const WIDTH = 10;
 const HEIGHT = 20 + 4;
 
@@ -7,6 +7,7 @@ var tick_count = 0;
 
 const FRAME_DATA = [];
 
+// FRAME_DATAの初期化
 for (let i = 0; i < HEIGHT; i++) {
     FRAME_DATA[i] = [];
 
@@ -80,10 +81,10 @@ function getRotateCount(direction) {
 
 // 落下中ブロックを引数で指定した方向に動かせるか
 function canMove(direction) {
+    var frame_data = copy2dArray(FRAME_DATA);
+
+    // 配列の走査方向を同じにするためframe_dataを回転させる
     const rotateCount = getRotateCount(direction);
-
-    var frame_data = FRAME_DATA.map(a => a.slice());
-
     for (let i = 0; i < rotateCount; i++) {
         frame_data = rotate(frame_data);
     }
@@ -126,12 +127,12 @@ function detectGameOver() {
     return false;
 }
 
-// 落下中のブロックを1マス移動する
+// 落下中のブロックを引数で指定した方向に1マス移動する
 function moveBlock(direction) {
+    var frame_data = copy2dArray(FRAME_DATA);
+
+    // 配列の走査方向を同じにするためframe_dataを回転させる
     const rotateCount = getRotateCount(direction);
-
-    var frame_data = FRAME_DATA.map(a => a.slice());
-
     for (let i = 0; i < rotateCount; i++) {
         frame_data = rotate(frame_data);
     }
@@ -140,8 +141,8 @@ function moveBlock(direction) {
     const height = frame_data.length;
 
     for (let i = 0; i < width; i++) {
-        // 縦にブロックを見ていく。
-        // FALLINGの移動先ににEXISTSがあったらブロックを動かせない。
+        // 下から上に向かってブロックを見ていく。
+        // EMPTYの上にFALLINGがあればcellを入れ替える。
         for (let j = height - 1; 0 < j; j--) {
             let cell = frame_data[j][i];
             let precedingCell = frame_data[j - 1][i];
@@ -153,10 +154,12 @@ function moveBlock(direction) {
         }
     }
 
+    // 回転させた分を戻す
     for (let i = 0; i < 4 - rotateCount; i++) {
         frame_data = rotate(frame_data);
     }
 
+    // ブロック移動後のcellの状態をFRAME_DATAに反映
     for (let i = 0; i < HEIGHT; i++) {
         for (let j = 0; j < WIDTH; j++) {
             FRAME_DATA[i][j] = frame_data[i][j];
@@ -177,36 +180,31 @@ function fixBlock() {
 
 // 入力のハンドリング
 function handleUserInput() {
-    if (input_buffer.length) {
-        var keyCode = input_buffer[input_buffer.length - 1];
-
-        console.log("handle " + keyCode);
-
-        switch (keyCode) {
-            case LEFT_KEY:
-            case H_KEY:
-                if (canMove("left")) {
-                    moveBlock("left");
-                }
-                break;
-
-            case RIGHT_KEY:
-            case L_KEY:
-                if (canMove("right")) {
-                    moveBlock("right");
-                }
-                break;
-
-            case DOWN_KEY:
-            case J_KEY:
-                if (canMove("down")) {
-                    moveBlock("down");
-                }
-                break;
-        }
-
-        input_buffer = [];
+    if (!input_buffer.length) {
+        return;
     }
+
+    var keyCode = input_buffer[input_buffer.length - 1];
+
+    console.log("handle " + keyCode);
+
+    const moveKeys = {
+      [LEFT_KEY]: "left",
+      [H_KEY]: "left",
+
+      [RIGHT_KEY]: "right",
+      [L_KEY]: "right",
+
+      [DOWN_KEY]: "down",
+      [J_KEY]: "down",
+    }
+
+    const direction = moveKeys[keyCode];
+    if (direction && canMove(direction)) {
+        moveBlock(direction);
+    }
+
+    input_buffer = [];
 }
 
 function makeNextFameData() {
@@ -262,7 +260,15 @@ $(() => {
 
     $(window).on("keydown", (event) => {
         const keyCode = event.keyCode;
-        const array = [LEFT_KEY, RIGHT_KEY, DOWN_KEY, H_KEY, J_KEY, L_KEY];
+        const array = [
+            LEFT_KEY,
+            RIGHT_KEY,
+            DOWN_KEY,
+            H_KEY,
+            J_KEY,
+            L_KEY
+        ];
+
         if (array.includes(keyCode)) {
             input_buffer.push(keyCode);
         }
