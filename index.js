@@ -4,7 +4,7 @@ const HEIGHT = 20 + 4;
 
 var tick_count = 0;
 
-let FRAME_DATA = [];
+const FRAME_DATA = [];
 
 for (let i = 0; i < HEIGHT; i++) {
     FRAME_DATA[i] = [];
@@ -68,14 +68,33 @@ function enterNewBlock() {
     }
 }
 
-// 落下中のブロックが下に落ちられるか
-function canFall() {
+function getRotateCount(direction) {
+    return {
+        "down": 0,
+        "right": 1,
+        "up": 2,
+        "left": 3,
+    }[direction];
+}
+
+// 落下中ブロックを引数で指定した方向に動かせるか
+function canMove(direction) {
+    const rotateCount = getRotateCount(direction);
+
+    var frame_data = FRAME_DATA.map(a => a.slice());
+
+    for (let i = 0; i < rotateCount; i++) {
+        frame_data = rotate(frame_data);
+    }
+
     // 縦にブロックを見ていく。
     // FALLINGの下にEXISTSがあったらブロックを落とせない。
-    for (let i = 0; i < WIDTH; i++) {
-        for (let j = 0; j < HEIGHT - 1; j++) {
-            let cell = FRAME_DATA[j][i];
-            let followingCell = FRAME_DATA[j + 1][i];
+    const width = frame_data[0].length;
+    const height = frame_data.length;
+    for (let i = 0; i < width; i++) {
+        for (let j = 0; j < height - 1; j++) {
+            let cell = frame_data[j][i];
+            let followingCell = frame_data[j + 1][i];
 
             if (cell === CELL_TYPE_FALLING && followingCell === CELL_TYPE_EXIST) {
                 return false;
@@ -84,8 +103,8 @@ function canFall() {
     }
 
     // ブロックが底についているかの判定
-    for (let i = 0; i < WIDTH; i++) {
-        if (FRAME_DATA[HEIGHT - 1][i] == CELL_TYPE_FALLING) {
+    for (let i = 0; i < width; i++) {
+        if (frame_data[height - 1][i] == CELL_TYPE_FALLING) {
             return false;
         }
     }
@@ -106,19 +125,40 @@ function detectGameOver() {
     return false;
 }
 
-// 落下中のブロックを1マス下へ移動する
-function fallBlock() {
-    for (let i = 0; i < WIDTH; i++) {
+// 落下中のブロックを1マス移動する
+function moveBlock(direction) {
+    const rotateCount = getRotateCount(direction);
+
+    var frame_data = FRAME_DATA.map(a => a.slice());
+
+    for (let i = 0; i < rotateCount; i++) {
+        frame_data = rotate(frame_data);
+    }
+
+    const width = frame_data[0].length;
+    const height = frame_data.length;
+
+    for (let i = 0; i < width; i++) {
         // 縦にブロックを見ていく。
-        // FALLINGの下にEXISTSがあったらブロックを落とせない。
-        for (let j = HEIGHT - 1; 0 < j; j--) {
-            let cell = FRAME_DATA[j][i];
-            let precedingCell = FRAME_DATA[j - 1][i];
+        // FALLINGの移動先ににEXISTSがあったらブロックを動かせない。
+        for (let j = height - 1; 0 < j; j--) {
+            let cell = frame_data[j][i];
+            let precedingCell = frame_data[j - 1][i];
 
             if (cell === CELL_TYPE_EMPTY && precedingCell === CELL_TYPE_FALLING) {
-                FRAME_DATA[j][i] = CELL_TYPE_FALLING;
-                FRAME_DATA[j - 1][i] = CELL_TYPE_EMPTY;
+                frame_data[j][i] = CELL_TYPE_FALLING;
+                frame_data[j - 1][i] = CELL_TYPE_EMPTY;
             }
+        }
+    }
+
+    for (let i = 0; i < 4 - rotateCount; i++) {
+        frame_data = rotate(frame_data);
+    }
+
+    for (let i = 0; i < HEIGHT; i++) {
+        for (let j = 0; j < WIDTH; j++) {
+            FRAME_DATA[i][j] = frame_data[i][j];
         }
     }
 }
@@ -143,11 +183,17 @@ function makeNextFameData() {
             case LEFT_KEY:
             case H_KEY:
                 console.log("handle " + keyCode);
+                if (canMove("left")) {
+                    moveBlock("left");
+                }
                 break;
 
             case RIGHT_KEY:
             case L_KEY:
                 console.log("handle " + keyCode);
+                if (canMove("right")) {
+                    moveBlock("right");
+                }
                 break;
         }
 
@@ -163,8 +209,8 @@ function makeNextFameData() {
     if (blockFalled()) {
         enterNewBlock();  // 新しいブロックを生成
     } else {
-        if (canFall()) {
-            fallBlock();
+        if (canMove("down")) {
+            moveBlock("down");
         } else {
             fixBlock();
 
@@ -203,7 +249,6 @@ $(() => {
     });
 
     $(window).on("keydown", (event) => {
-        FRAME_DATA = rotate(FRAME_DATA);
         const keyCode = event.keyCode;
         const array = [LEFT_KEY, RIGHT_KEY, H_KEY, L_KEY];
         if (array.includes(keyCode)) {
