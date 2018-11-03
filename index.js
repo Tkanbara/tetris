@@ -114,6 +114,158 @@ function canMove(direction) {
     return true;
 }
 
+function forEachCell(callback) {
+    for (let i = 0; i < HEIGHT; i++) {
+        for (let j = 0; j < WIDTH; j++) {
+            callback(i, j, FRAME_DATA[i][j]);
+        }
+    }
+}
+
+function canRotate() {
+    // 落下中のブロック位置を特定
+    let top = Number.POSITIVE_INFINITY;
+    let bottom = Number.NEGATIVE_INFINITY;
+    let left = Number.POSITIVE_INFINITY;
+    let right = Number.NEGATIVE_INFINITY;
+
+    forEachCell((i, j, cellType) => {
+        if (cellType != CELL_TYPE_FALLING)
+            return;
+
+        if (i < top)
+            top = i;
+        if (bottom < i)
+            bottom = i;
+        if (j < left)
+            left = j;
+        if (right < j)
+            right = j;
+    });
+
+    let block = [];
+
+    // ブロックの形を抜き出す
+    for (let i = top; i <= bottom; i++) {
+        let row = [];
+
+        for (let j = left; j <= right; j++) {
+            let cell = FRAME_DATA[i][j];
+            row.push(cell == CELL_TYPE_FALLING ? cell : CELL_TYPE_EMPTY);
+        }
+
+        block.push(row);
+    }
+
+    let rotatedBlock = rotate(block);
+
+    let blockCenterX = Math.floor(block[0].length / 2);
+    let blockCenterY = Math.floor(block.length / 2);
+
+    // 回転後の中心座標
+    let rotatedBlockCenterX = Math.floor(rotatedBlock[0].length / 2);
+    let rotatedBlockCenterY = Math.floor(rotatedBlock.length / 2);
+
+    let xOffset = blockCenterX - rotatedBlockCenterX;
+    let yOffset = blockCenterY - rotatedBlockCenterY;
+
+    // 回転後のブロックの範囲(FRAME_DATA基準)
+    let top2 = top + yOffset;
+    let bottom2 = top2 + rotatedBlock.length;
+    let left2 = left + xOffset;
+    let right2 = left + rotatedBlock[0].length;
+
+    // 回転後のブロックの位置にFIXEDのCELLが無ければ回転できる
+    for (let i = 0; i < rotatedBlock.length; i++) {
+        for (let j = 0; j < rotatedBlock[0].length; j++) {
+            let inFrameCell = FRAME_DATA[top2 + i][left2 + j];
+            let inBlockCell = rotatedBlock[i][j];
+
+            if (inFrameCell == CELL_TYPE_EXIST && inBlockCell == CELL_TYPE_FALLING) {
+                return false;
+            }
+        }
+    }
+
+    // TODO 回転してFRAME_DATAからはみ出さないか判定
+
+    return true;
+}
+
+function rotateBlock() {
+    // 落下中のブロック位置を特定
+    let top = Number.POSITIVE_INFINITY;
+    let bottom = Number.NEGATIVE_INFINITY;
+    let left = Number.POSITIVE_INFINITY;
+    let right = Number.NEGATIVE_INFINITY;
+
+    forEachCell((i, j, cellType) => {
+        if (cellType != CELL_TYPE_FALLING)
+            return;
+
+        if (i < top)
+            top = i;
+        if (bottom < i)
+            bottom = i;
+        if (j < left)
+            left = j;
+        if (right < j)
+            right = j;
+    });
+
+    console.log(top);
+    console.log(bottom);
+    console.log(left);
+    console.log(right);
+
+    let block = [];
+
+    // ブロックの形を抜き出す
+    for (let i = top; i <= bottom; i++) {
+        let row = [];
+
+        for (let j = left; j <= right; j++) {
+            let cell = FRAME_DATA[i][j];
+            row.push(cell == CELL_TYPE_FALLING ? cell : CELL_TYPE_EMPTY);
+        }
+
+        block.push(row);
+    }
+
+    let rotatedBlock = rotate(block);
+
+    let blockCenterX = Math.floor(block[0].length / 2);
+    let blockCenterY = Math.floor(block.length / 2);
+
+    // 回転後の中心座標
+    let rotatedBlockCenterX = Math.floor(rotatedBlock[0].length / 2);
+    let rotatedBlockCenterY = Math.floor(rotatedBlock.length / 2);
+
+    let xOffset = blockCenterX - rotatedBlockCenterX;
+    let yOffset = blockCenterY - rotatedBlockCenterY;
+
+    // 回転後のブロックの範囲(FRAME_DATA基準)
+    let top2 = top + yOffset;
+    let bottom2 = top2 + rotatedBlock.length;
+    let left2 = left + xOffset;
+    let right2 = left + rotatedBlock[0].length;
+
+    // 一旦、落下中のブロックをEMPTYに
+    forEachCell((i, j, cell) => {
+        if (cell == CELL_TYPE_FALLING) {
+            FRAME_DATA[i][j] = CELL_TYPE_EMPTY;
+        }
+    });
+
+    for (let i = 0; i < rotatedBlock.length; i++) {
+        for (let j = 0; j < rotatedBlock[0].length; j++) {
+            if (rotatedBlock[i][j] == CELL_TYPE_FALLING) {
+                FRAME_DATA[top2 + i][left2 + j] = rotatedBlock[i][j];
+            }
+        }
+    }
+}
+
 // ゲームオーバー検出
 function detectGameOver() {
     for (let i = 0; i < 4; i++) {
@@ -188,15 +340,25 @@ function handleUserInput() {
 
     console.log("handle " + keyCode);
 
+    const rotateKey = {
+        [UP_KEY]: "up",
+        [K_KEY]: "up",
+    }
+
+    const rotate = rotateKey[keyCode];
+    if (!blockFalled() && rotate && canRotate()) {
+        rotateBlock();
+    }
+
     const moveKeys = {
-      [LEFT_KEY]: "left",
-      [H_KEY]: "left",
+        [LEFT_KEY]: "left",
+        [H_KEY]: "left",
 
-      [RIGHT_KEY]: "right",
-      [L_KEY]: "right",
+        [RIGHT_KEY]: "right",
+        [L_KEY]: "right",
 
-      [DOWN_KEY]: "down",
-      [J_KEY]: "down",
+        [DOWN_KEY]: "down",
+        [J_KEY]: "down",
     }
 
     const direction = moveKeys[keyCode];
@@ -262,9 +424,11 @@ $(() => {
         const keyCode = event.keyCode;
         const array = [
             LEFT_KEY,
+            UP_KEY,
             RIGHT_KEY,
             DOWN_KEY,
             H_KEY,
+            K_KEY,
             J_KEY,
             L_KEY
         ];
