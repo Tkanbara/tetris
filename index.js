@@ -182,7 +182,7 @@ function canRotate() {
         }
 
         for (let j = 0; j < rotatedBlock[0].length; j++) {
-            if (WIDTH <= left2 + j) {
+            if (WIDTH <= left2 + j || left2 < 0) {
                 return false;
             }
 
@@ -372,6 +372,25 @@ function handleUserInput() {
     input_buffer = [];
 }
 
+function deleteLine() {
+    let deleteCount = 0;
+
+    for (let i = HEIGHT - 1; 0 <= i; i--) {
+        let shouldDelete = FRAME_DATA[i].every(cell => cell === CELL_TYPE_EXIST);
+
+        if (shouldDelete) {
+            deleteCount++;
+            FRAME_DATA.splice(i, 1);
+        }
+    }
+
+    for (let i = 0; i < deleteCount; i++) {
+        FRAME_DATA.unshift(
+            new Array(WIDTH).fill(CELL_TYPE_EMPTY, 0, WIDTH)
+        );
+    }
+}
+
 function makeNextFameData() {
     handleUserInput();
 
@@ -388,6 +407,7 @@ function makeNextFameData() {
             moveBlock("down");
         } else {
             fixBlock();
+            deleteLine();
 
             if (detectGameOver()) {
                 clearInterval(interval);
