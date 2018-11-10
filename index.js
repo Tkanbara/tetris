@@ -435,14 +435,6 @@ $(() => {
 });
 
 $(() => {
-    $("#stop").on("click", () => {
-        clearInterval(interval);
-    });
-
-    $("#resume").on("click", () => {
-        run();
-    });
-
     $(window).on("keydown", (event) => {
         const keyCode = event.keyCode;
         const array = [
