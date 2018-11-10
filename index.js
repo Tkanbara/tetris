@@ -1,5 +1,5 @@
-const FRAME_RATE = 50;
-const BLOCK_FALLING_FREQUENCY = 25;
+const FRAME_RATE = 20;
+const BLOCK_FALLING_FREQUENCY = 10;
 const WIDTH = 10;
 const HEIGHT = 20 + 4;
 
@@ -177,7 +177,15 @@ function canRotate() {
 
     // 回転後のブロックの位置にFIXEDのCELLが無ければ回転できる
     for (let i = 0; i < rotatedBlock.length; i++) {
+        if (HEIGHT <= top2 + i) {
+            return false;
+        }
+
         for (let j = 0; j < rotatedBlock[0].length; j++) {
+            if (WIDTH <= left2 + j) {
+                return false;
+            }
+
             let inFrameCell = FRAME_DATA[top2 + i][left2 + j];
             let inBlockCell = rotatedBlock[i][j];
 
@@ -212,11 +220,6 @@ function rotateBlock() {
         if (right < j)
             right = j;
     });
-
-    console.log(top);
-    console.log(bottom);
-    console.log(left);
-    console.log(right);
 
     let block = [];
 
