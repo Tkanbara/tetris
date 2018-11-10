@@ -213,11 +213,6 @@ function rotateBlock() {
             right = j;
     });
 
-    console.log(top);
-    console.log(bottom);
-    console.log(left);
-    console.log(right);
-
     let block = [];
 
     // ブロックの形を抜き出す
